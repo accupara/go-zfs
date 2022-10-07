@@ -156,7 +156,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	curVdevGroup = nil
 	for _, line := range lines {
 		loc = loc + 1
-		log.Println(line)
+		log.Println(line, "--", line[0])
 		if len(line) == 0 {
 			continue
 		}
@@ -172,6 +172,8 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 		case "action:":
 			setString(&ez.Action, strings.Join(line[1:], " "))
 			actionFound = true
+		case ez.Name:
+			continue
 		default:
 			if actionFound {
 				ez.Action = ez.Action + " " + strings.Join(line, " ")
