@@ -1,6 +1,9 @@
 package zfs
 
-import "strings"
+import (
+	"log"
+	"strings"
+)
 
 // ZFS zpool states, which can indicate if a pool is online, offline, degraded, etc.
 //
@@ -153,6 +156,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	curVdevGroup = nil
 	for _, line := range lines {
 		loc = loc + 1
+		log.Println(line)
 		switch line[0] {
 		case "pool:":
 			return loc - 1
@@ -204,6 +208,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 
 	for i := 0; i < len(out); i++ {
 		var ez ExportedZpool
+		log.Println(out[i])
 		if out[i][0] == "pool:" {
 			ez.Name = out[i][0]
 			linesParsed := ez.parseLines(out[i+1:])
@@ -221,6 +226,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 	for i := 0; i < len(out); i++ {
 		var ez ExportedZpool
 		if out[i][0] == "pool:" {
+			log.Println(out[i])
 			ez.Name = out[i][0]
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
