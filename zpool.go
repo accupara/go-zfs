@@ -157,6 +157,9 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	for _, line := range lines {
 		loc = loc + 1
 		log.Println(line)
+		if len(line[0]) == 0 {
+			continue
+		}
 		switch line[0] {
 		case "pool:":
 			return loc - 1
@@ -175,22 +178,20 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 				actionFound = false
 				continue
 			}
-			if len(line) > 0 {
-				if IsVdevGroup(line[0]) {
-					curVdevGroup = &VdevGroup{
-						Group: Vdev{
-							Name:   line[0], // TODO: Use stat here.
-							Health: line[1],
-						},
-					}
-					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
-				} else if curVdevGroup != nil {
-					device := Vdev{
-						Name:   line[0],
+			if IsVdevGroup(line[0]) {
+				curVdevGroup = &VdevGroup{
+					Group: Vdev{
+						Name:   line[0], // TODO: Use stat here.
 						Health: line[1],
-					}
-					curVdevGroup.Devices = append(curVdevGroup.Devices, device)
+					},
 				}
+				ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
+			} else if curVdevGroup != nil {
+				device := Vdev{
+					Name:   line[0],
+					Health: line[1],
+				}
+				curVdevGroup.Devices = append(curVdevGroup.Devices, device)
 			}
 		}
 	}
