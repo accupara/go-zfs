@@ -175,15 +175,20 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 			actionFound = true
 		case ez.Name:
 			continue
+		case "config:":
+			continue
 		default:
+			log.Println(line, "--", line[0])
 			if actionFound {
 				ez.Action = ez.Action + " " + strings.Join(line, " ")
 				actionFound = false
 				continue
 			}
 
+			log.Println("Here:", line, "--", line[0])
 			// example: raidz1-0
 			if IsVdevGroup(strings.Split(line[0], "-")[0]) {
+				log.Println("Here1:", line, "--", line[0])
 				curVdevGroup = &VdevGroup{
 					Group: Vdev{
 						Name:   line[0], // TODO: Use stat here.
@@ -191,7 +196,16 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 					},
 				}
 				ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
-			} else if curVdevGroup != nil {
+			} else {
+				if curVdevGroup == nil {
+					curVdevGroup = &VdevGroup{
+						Group: Vdev{
+							Name: "fileordisk",
+						},
+					}
+					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
+				}
+				log.Println("Here2:", line, "--", line[0])
 				device := Vdev{
 					Name:   line[0],
 					Health: line[1],
@@ -199,6 +213,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 				curVdevGroup.Devices = append(curVdevGroup.Devices, device)
 			}
 		}
+	}
 	}
 	return loc
 }
