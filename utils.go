@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"regexp"
 	"runtime"
@@ -396,6 +397,7 @@ func (z *Zpool) parseVdevs(lines [][]string) error {
 		device := Vdev{
 			Name: vdevName,
 		}
+		log.Println(strings.Join(line, "*"))
 		err = setUint(&device.Size, line[1])
 		if err != nil {
 			return err
