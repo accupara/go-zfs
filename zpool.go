@@ -214,7 +214,6 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 			}
 		}
 	}
-	}
 	return loc
 }
 
