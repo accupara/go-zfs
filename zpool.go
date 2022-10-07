@@ -211,5 +211,21 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 		}
 		pools = append(pools, z)
 	}
+
+	args = []string{"import", "-D"}
+	out, err = zpoolOutput(args...)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(out); i++ {
+		var ez ExportedZpool
+		if out[i][0] == "pool:" {
+			ez.Name = out[i][0]
+			linesParsed := ez.parseLines(out[i+1:])
+			i = i + linesParsed
+		}
+		pools = append(pools, z)
+	}
 	return pools, nil
 }
