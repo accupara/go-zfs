@@ -157,7 +157,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	for _, line := range lines {
 		loc = loc + 1
 		log.Println(line)
-		if len(line[0]) == 0 {
+		if len(line) == 0 {
 			continue
 		}
 		switch line[0] {
