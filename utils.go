@@ -420,7 +420,6 @@ func (z *Zpool) parseVdevs(lines [][]string) error {
 			return err
 		}
 		setString(&device.Health, line[9])
-		setString(&device.AltRoot, line[10])
 
 		if len(z.Vdevs) == 0 && !IsVdevGroup(vdevName) {
 			// this is not a group but a single device
