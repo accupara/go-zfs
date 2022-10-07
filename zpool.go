@@ -227,14 +227,14 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 	var pools []*ExportedZpool
 	log.Println(out)
 	for i := 0; i < len(out); i++ {
-		var ez ExportedZpool
+		ez := &ExportedZpool{}
 		log.Println(out[i])
 		if out[i][0] == "pool:" {
-			ez.Name = out[i][0]
+			ez.Name = out[i][1]
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
+			pools = append(pools, ez)
 		}
-		pools = append(pools, &ez)
 	}
 
 	args = []string{"import", "-D"}
@@ -245,14 +245,15 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 	log.Println(out)
 	log.Println(out[0][0])
 	for i := 0; i < len(out); i++ {
-		var ez ExportedZpool
+		ez := &ExportedZpool{}
 		if out[i][0] == "pool:" {
 			log.Println(out[i])
-			ez.Name = out[i][0]
+			ez.Name = out[i][1]
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
+			log.Println(ez.Name)
+			pools = append(pools, ez)
 		}
-		pools = append(pools, &ez)
 	}
 	return pools, nil
 }
