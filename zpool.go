@@ -1,7 +1,6 @@
 package zfs
 
 import (
-	"log"
 	"strings"
 )
 
@@ -160,7 +159,6 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 		if len(line) == 0 {
 			continue
 		}
-		log.Println(line, "--", line[0])
 		switch line[0] {
 		case "pool:":
 			return loc - 1
@@ -178,17 +176,14 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 		case "config:":
 			continue
 		default:
-			log.Println(line, "--", line[0])
 			if actionFound {
 				ez.Action = ez.Action + " " + strings.Join(line, " ")
 				actionFound = false
 				continue
 			}
 
-			log.Println("Here:", line, "--", line[0])
 			// example: raidz1-0
 			if IsVdevGroup(strings.Split(line[0], "-")[0]) {
-				log.Println("Here1:", line, "--", line[0])
 				curVdevGroup = &VdevGroup{
 					Group: Vdev{
 						Name:   line[0], // TODO: Use stat here.
@@ -205,7 +200,6 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 					}
 					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
 				}
-				log.Println("Here2:", line, "--", line[0])
 				device := Vdev{
 					Name:   line[0],
 					Health: line[1],
@@ -225,10 +219,8 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 		return nil, err
 	}
 	var pools []*ExportedZpool
-	log.Println(out)
 	for i := 0; i < len(out); i++ {
 		ez := &ExportedZpool{}
-		log.Println(out[i])
 		if out[i][0] == "pool:" {
 			ez.Name = out[i][1]
 			linesParsed := ez.parseLines(out[i+1:])
@@ -242,16 +234,12 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(out)
-	log.Println(out[0][0])
 	for i := 0; i < len(out); i++ {
 		ez := &ExportedZpool{}
 		if out[i][0] == "pool:" {
-			log.Println(out[i])
 			ez.Name = out[i][1]
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
-			log.Println(ez.Name)
 			pools = append(pools, ez)
 		}
 	}
