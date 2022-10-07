@@ -156,10 +156,11 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	curVdevGroup = nil
 	for _, line := range lines {
 		loc = loc + 1
-		log.Println(line, "--", line[0])
+
 		if len(line) == 0 {
 			continue
 		}
+		log.Println(line, "--", line[0])
 		switch line[0] {
 		case "pool:":
 			return loc - 1
