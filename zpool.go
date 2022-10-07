@@ -205,7 +205,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 		return nil, err
 	}
 	var pools []*ExportedZpool
-
+	log.Println(out)
 	for i := 0; i < len(out); i++ {
 		var ez ExportedZpool
 		log.Println(out[i])
@@ -222,7 +222,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	log.Println(out)
 	for i := 0; i < len(out); i++ {
 		var ez ExportedZpool
 		if out[i][0] == "pool:" {
