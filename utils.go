@@ -61,7 +61,7 @@ func (c *command) Run(arg ...string) ([][]string, error) {
 	output := make([][]string, len(lines))
 
 	for i, l := range lines {
-		output[i] = strings.Split(strings.TrimSpace(l), "\t")
+		output[i] = strings.Fields(l)
 	}
 
 	return output, nil
