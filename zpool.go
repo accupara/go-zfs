@@ -190,7 +190,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 			}
 		}
 	}
-	return nil
+	return loc
 }
 
 // ListExportedZpools list all ZFS zpools that can be imported on the current system.
@@ -209,7 +209,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
 		}
-		pools = append(pools, z)
+		pools = append(pools, &ez)
 	}
 
 	args = []string{"import", "-D"}
@@ -225,7 +225,7 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 			linesParsed := ez.parseLines(out[i+1:])
 			i = i + linesParsed
 		}
-		pools = append(pools, z)
+		pools = append(pools, &ez)
 	}
 	return pools, nil
 }
