@@ -178,7 +178,9 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 				actionFound = false
 				continue
 			}
-			if IsVdevGroup(line[0]) {
+
+			// example: raidz1-0
+			if IsVdevGroup(strings.Split(line[0], "-")[0]) {
 				curVdevGroup = &VdevGroup{
 					Group: Vdev{
 						Name:   line[0], // TODO: Use stat here.
