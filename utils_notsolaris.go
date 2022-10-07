@@ -16,4 +16,5 @@ var (
 
 	zpoolPropListOptions = strings.Join(zpoolPropList, ",")
 	zpoolArgs            = []string{"get", "-Hp", zpoolPropListOptions}
+	zpoolVdevArgs        = []string{"list", "-Hvp"}
 )

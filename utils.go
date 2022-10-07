@@ -352,3 +352,91 @@ func (z *Zpool) parseLine(line []string) error {
 	}
 	return err
 }
+
+type Vdev struct {
+	Name          string
+	Size          uint64
+	Allocated     uint64
+	Free          uint64
+	Fragmentation uint64
+	Health        string
+	AltRoot       string
+}
+
+type VdevGroup struct {
+	Group   Vdev
+	Devices []Vdev
+}
+
+func IsVdevGroup(groupType string) bool {
+	validVdevGroups := map[string]bool{
+		"mirror": true,
+		"raidz1": true,
+		"raidz2": true,
+		"raidz3": true,
+		"spare":  true,
+		"log":    true,
+		"cache":  true,
+	}
+	_, ok := validVdevGroups[groupType]
+	return ok
+}
+
+func (z *Zpool) parseVdevs(lines [][]string) error {
+	var curVdevGroup *VdevGroup
+	var err error
+	if z.Name != lines[0][0] {
+		return fmt.Errorf("pool name mismatch. required: %s, got %s.", z.Name, lines[0][0])
+	}
+	for _, line := range lines {
+		vdevName := line[0]
+		if z.Name == vdevName {
+			continue
+		}
+		device := Vdev{
+			Name: vdevName,
+		}
+		err = setUint(&device.Size, line[1])
+		if err != nil {
+			return err
+		}
+		err = setUint(&device.Allocated, line[2])
+		if err != nil {
+			return err
+		}
+		err = setUint(&device.Free, line[3])
+		if err != nil {
+			return err
+		}
+		// Trim trailing "%" before parsing uint
+		i := strings.Index(line[6], "%")
+		if i < 0 {
+			i = len(line[6])
+		}
+		err = setUint(&device.Fragmentation, line[6][:i])
+		if err != nil {
+			return err
+		}
+		setString(&device.Health, line[9])
+		setString(&device.AltRoot, line[10])
+
+		if len(z.Vdevs) == 0 && !IsVdevGroup(vdevName) {
+			// this is not a group but a single device
+			curVdevGroup = &VdevGroup{
+				Group: Vdev{
+					Name: "fileordisk", // TODO: Use stat here.
+				},
+			}
+			curVdevGroup.Devices = append(curVdevGroup.Devices, device)
+			z.Vdevs = append(z.Vdevs, *curVdevGroup)
+		} else if IsVdevGroup(vdevName) {
+			curVdevGroup = &VdevGroup{
+				Group: device,
+			}
+			z.Vdevs = append(z.Vdevs, *curVdevGroup)
+		} else {
+			curVdevGroup.Devices = append(curVdevGroup.Devices, device)
+		}
+	}
+	return nil
+}

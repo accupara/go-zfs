@@ -26,6 +26,7 @@ type Zpool struct {
 	Freeing       uint64
 	Leaked        uint64
 	DedupRatio    float64
+	Vdevs         []VdevGroup
 }
 
 // zpool is a helper function to wrap typical calls to zpool and ignores stdout.
@@ -54,6 +55,17 @@ func GetZpool(name string) (*Zpool, error) {
 		if err := z.parseLine(line); err != nil {
 			return nil, err
 		}
+	}
+
+	// Retrieve details of associated vdevs
+	args = zpoolVdevArgs
+	args = append(args, name)
+	out, err = zpoolOutput(args...)
+	if err != nil {
+		return nil, err
+	}
+	if err := z.parseVdevs(out); err != nil {
+		return nil, err
 	}
 
 	return z, nil
