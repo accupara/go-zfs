@@ -1,16 +1,19 @@
 package zfs
 
+import "strings"
+
 // ZFS zpool states, which can indicate if a pool is online, offline, degraded, etc.
 //
 // More information regarding zpool states can be found in the ZFS manual:
 // https://openzfs.github.io/openzfs-docs/man/7/zpoolconcepts.7.html#Device_Failure_and_Recovery
 const (
-	ZpoolOnline   = "ONLINE"
-	ZpoolDegraded = "DEGRADED"
-	ZpoolFaulted  = "FAULTED"
-	ZpoolOffline  = "OFFLINE"
-	ZpoolUnavail  = "UNAVAIL"
-	ZpoolRemoved  = "REMOVED"
+	ZpoolOnline    = "ONLINE"
+	ZpoolDegraded  = "DEGRADED"
+	ZpoolFaulted   = "FAULTED"
+	ZpoolOffline   = "OFFLINE"
+	ZpoolUnavail   = "UNAVAIL"
+	ZpoolRemoved   = "REMOVED"
+	ZpoolDestroyed = "ONLINE (DESTROYED)"
 )
 
 // Zpool is a ZFS zpool.
@@ -125,4 +128,87 @@ func ListZpools() ([]*Zpool, error) {
 		pools = append(pools, z)
 	}
 	return pools, nil
+}
+
+// ExportedZpool is a ZFS zpool that can be imported.
+// A pool is a top-level structure in ZFS, and can contain many descendent datasets.
+type ExportedZpool struct {
+	Name   string
+	Id     string
+	State  string
+	Status string
+	Action string
+	Vdevs  []VdevGroup
+}
+
+func (ez *ExportedZpool) Import(tryForce bool) error {
+	return nil
+}
+
+func (ez *ExportedZpool) parseLines(lines [][]string) int {
+	var curVdevGroup *VdevGroup
+
+	actionFound := false
+	loc := 0
+	curVdevGroup = nil
+	for _, line := range lines {
+		loc = loc + 1
+		switch line[0] {
+		case "pool:":
+			return loc - 1
+		case "id:":
+			setString(&ez.Id, line[1])
+		case "state:":
+			setString(&ez.State, strings.Join(line[1:], " "))
+		case "status:":
+			setString(&ez.Status, strings.Join(line[1:], " "))
+		case "action:":
+			setString(&ez.Action, strings.Join(line[1:], " "))
+			actionFound = true
+		default:
+			if actionFound {
+				ez.Action = ez.Action + " " + strings.Join(line, " ")
+				actionFound = false
+				continue
+			}
+			if len(line) > 0 {
+				if IsVdevGroup(line[0]) {
+					curVdevGroup = &VdevGroup{
+						Group: Vdev{
+							Name:   line[0], // TODO: Use stat here.
+							Health: line[1],
+						},
+					}
+					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
+				} else if curVdevGroup != nil {
+					device := Vdev{
+						Name:   line[0],
+						Health: line[1],
+					}
+					curVdevGroup.Devices = append(curVdevGroup.Devices, device)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// ListExportedZpools list all ZFS zpools that can be imported on the current system.
+func ListExportedZpools() ([]*ExportedZpool, error) {
+	args := []string{"import"}
+	out, err := zpoolOutput(args...)
+	if err != nil {
+		return nil, err
+	}
+	var pools []*ExportedZpool
+
+	for i := 0; i < len(out); i++ {
+		var ez ExportedZpool
+		if out[i][0] == "pool:" {
+			ez.Name = out[i][0]
+			linesParsed := ez.parseLines(out[i+1:])
+			i = i + linesParsed
+		}
+		pools = append(pools, z)
+	}
 }
