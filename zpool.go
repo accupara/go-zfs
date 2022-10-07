@@ -211,4 +211,5 @@ func ListExportedZpools() ([]*ExportedZpool, error) {
 		}
 		pools = append(pools, z)
 	}
+	return pools, nil
 }
