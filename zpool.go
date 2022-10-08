@@ -151,6 +151,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 	var curVdevGroup *VdevGroup
 
 	actionFound := false
+	configFound := false
 	loc := 0
 	curVdevGroup = nil
 	for _, line := range lines {
@@ -174,9 +175,10 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 		case ez.Name:
 			continue
 		case "config:":
+			configFound = true
 			continue
 		default:
-			if actionFound {
+			if actionFound && !configFound {
 				ez.Action = ez.Action + " " + strings.Join(line, " ")
 				actionFound = false
 				continue
