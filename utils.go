@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -382,6 +384,30 @@ func IsVdevGroup(groupType string) bool {
 	return ok
 }
 
+func ResolveDeviceName(name string) string {
+	var files []string
+	var err error
+
+	if runtime.GOOS == "linux" {
+		err = filepath.Walk("/dev/disk", func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+
+			if !info.IsDir() && filepath.Base(path) == name {
+				if fp, err := filepath.EvalSymlinks(path); err == nil {
+					files = append(files, filepath.Base(fp))
+				}
+			}
+			return nil
+		})
+	}
+	if err != nil || len(files) == 0 {
+		return name
+	}
+	return files[0]
+}
+
 func (z *Zpool) parseVdevs(lines [][]string) error {
 	var curVdevGroup *VdevGroup
 	var err error
@@ -394,7 +420,7 @@ func (z *Zpool) parseVdevs(lines [][]string) error {
 			continue
 		}
 		device := Vdev{
-			Name: vdevName,
+			Name: ResolveDeviceName(vdevName),
 		}
 		err = setUint(&device.Size, line[1])
 		if err != nil {
