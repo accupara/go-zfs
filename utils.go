@@ -367,7 +367,7 @@ type Vdev struct {
 
 type VdevGroup struct {
 	Group   Vdev
-	Devices []Vdev
+	Devices []*Vdev
 }
 
 func IsVdevGroup(groupType string) bool {
@@ -452,16 +452,14 @@ func (z *Zpool) parseVdevs(lines [][]string) error {
 				Group: Vdev{
 					Name: "fileordisk", // TODO: Use stat here.
 				},
-				Devices: []Vdev{},
 			}
 			curVdevGroup.Devices = append(curVdevGroup.Devices, device)
-			z.Vdevs = append(z.Vdevs, *curVdevGroup)
+			z.Vdevs = append(z.Vdevs, curVdevGroup)
 		} else if IsVdevGroup(vdevName) {
 			curVdevGroup = &VdevGroup{
-				Group:   device,
-				Devices: []Vdev{},
+				Group: device,
 			}
-			z.Vdevs = append(z.Vdevs, *curVdevGroup)
+			z.Vdevs = append(z.Vdevs, curVdevGroup)
 		} else {
 			curVdevGroup.Devices = append(curVdevGroup.Devices, device)
 		}
