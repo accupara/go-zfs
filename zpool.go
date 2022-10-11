@@ -31,7 +31,7 @@ type Zpool struct {
 	Freeing       uint64
 	Leaked        uint64
 	DedupRatio    float64
-	Vdevs         []VdevGroup
+	Vdevs         []*VdevGroup
 }
 
 // zpool is a helper function to wrap typical calls to zpool and ignores stdout.
@@ -140,7 +140,7 @@ type ExportedZpool struct {
 	State  string
 	Status string
 	Action string
-	Vdevs  []VdevGroup
+	Vdevs  []*VdevGroup
 }
 
 func (ez *ExportedZpool) Import(tryForce bool) error {
@@ -200,7 +200,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 						Name:   ResolveDeviceName(line[0]), // TODO: Use stat here.
 						Health: line[1],
 					},
-\				}
+				}
 				ez.Vdevs = append(ez.Vdevs, curVdevGroup)
 			} else {
 				if curVdevGroup == nil {

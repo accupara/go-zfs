@@ -367,7 +367,7 @@ type Vdev struct {
 
 type VdevGroup struct {
 	Group   Vdev
-	Devices []*Vdev
+	Devices []Vdev
 }
 
 func IsVdevGroup(groupType string) bool {
