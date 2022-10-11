@@ -405,6 +405,7 @@ func ResolveDeviceName(name string) string {
 	if err != nil || len(files) == 0 {
 		return name
 	}
+	logger.Log(files)
 	return files[0]
 }
 
