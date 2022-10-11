@@ -144,7 +144,16 @@ type ExportedZpool struct {
 }
 
 func (ez *ExportedZpool) Import(tryForce bool) error {
-	return nil
+	importFlags := "-N"
+	if tryForce {
+		importFlags = importFlags + "f"
+	}
+	if strings.Contains(ez.State, "DESTROYED") {
+		importFlags = importFlags + "D"
+	}
+	args := []string{"import", importFlags, ez.Id}
+	_, err := zpoolOutput(args...)
+	return err
 }
 
 func (ez *ExportedZpool) parseLines(lines [][]string) int {
@@ -188,7 +197,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 			if IsVdevGroup(strings.Split(line[0], "-")[0]) {
 				curVdevGroup = &VdevGroup{
 					Group: Vdev{
-						Name:   line[0], // TODO: Use stat here.
+						Name:   ResolveDeviceName(line[0]), // TODO: Use stat here.
 						Health: line[1],
 					},
 				}
@@ -203,7 +212,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
 				}
 				device := Vdev{
-					Name:   line[0],
+					Name:   ResolveDeviceName(line[0]),
 					Health: line[1],
 				}
 				curVdevGroup.Devices = append(curVdevGroup.Devices, device)
