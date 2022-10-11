@@ -200,6 +200,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 						Name:   ResolveDeviceName(line[0]), // TODO: Use stat here.
 						Health: line[1],
 					},
+					Devices: []Vdev{},
 				}
 				ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
 			} else {
@@ -208,6 +209,7 @@ func (ez *ExportedZpool) parseLines(lines [][]string) int {
 						Group: Vdev{
 							Name: "fileordisk",
 						},
+						Devices: []Vdev{},
 					}
 					ez.Vdevs = append(ez.Vdevs, *curVdevGroup)
 				}

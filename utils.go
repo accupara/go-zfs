@@ -452,12 +452,14 @@ func (z *Zpool) parseVdevs(lines [][]string) error {
 				Group: Vdev{
 					Name: "fileordisk", // TODO: Use stat here.
 				},
+				Devices: []Vdev{},
 			}
 			curVdevGroup.Devices = append(curVdevGroup.Devices, device)
 			z.Vdevs = append(z.Vdevs, *curVdevGroup)
 		} else if IsVdevGroup(vdevName) {
 			curVdevGroup = &VdevGroup{
-				Group: device,
+				Group:   device,
+				Devices: []Vdev{},
 			}
 			z.Vdevs = append(z.Vdevs, *curVdevGroup)
 		} else {
