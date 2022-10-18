@@ -118,6 +118,11 @@ func (z *Zpool) Clear() error {
 	return err
 }
 
+func ClearZpool(name string) error {
+	err := zpool("clear", "-F", name)
+	return err
+}
+
 // ListZpools list all ZFS zpools accessible on the current system.
 func ListZpools() ([]*Zpool, error) {
 	args := []string{"list", "-Ho", "name"}
