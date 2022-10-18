@@ -112,6 +112,12 @@ func (z *Zpool) Destroy() error {
 	return err
 }
 
+// Clears errors on a ZFS zpool by name.
+func (z *Zpool) Clear() error {
+	err := zpool("clear", "-F", z.Name)
+	return err
+}
+
 // ListZpools list all ZFS zpools accessible on the current system.
 func ListZpools() ([]*Zpool, error) {
 	args := []string{"list", "-Ho", "name"}
